@@ -26,12 +26,25 @@ def split_to_sentences(text):
     return sentences
 
 
+def evaluate_sentences(sentences, sparse_dict):
+    se_value = []
+    for i, sentence in enumerate(sentences):
+        se_value.append(0)
+        for word in sentence.split(' '):
+            if word in sparse_dict:
+                se_value[-1] += sparse_dict[word]
+
+    return se_value
+
+
 def tldr(file, percentage=30):
     text = load_file(file)
 
     sparse_dict = tfidf_vectorizer(text)
 
     sentences = split_to_sentences(text)
+
+    se_value = evaluate_sentences(sentences, sparse_dict)
 
 
 def main():
