@@ -20,10 +20,18 @@ def tfidf_vectorizer(text):
     return sparse_dict
 
 
+def split_to_sentences(text):
+    tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
+    sentences = tokenizer.tokenize(text)
+    return sentences
+
+
 def tldr(file, percentage=30):
     text = load_file(file)
 
     sparse_dict = tfidf_vectorizer(text)
+
+    sentences = split_to_sentences(text)
 
 
 def main():
