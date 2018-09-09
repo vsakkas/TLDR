@@ -67,11 +67,16 @@ def tldr(file, percentage=30):
 
 
 def main():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description='Text summarizing tool made in Python3.')
     parser.add_argument('file', help='Text file that will be summarized.')
+    parser.add_argument('-p', '--percentage', type=int, required=False,
+                        help='Percentage of summary compared to the size of the original text (default: 30).')
     args = parser.parse_args()
 
-    tldr(file=args.file)
+    if args.percentage is None:
+        tldr(file=args.file)
+    else:
+        tldr(file=args.file, percentage=args.percentage)
 
 
 if __name__ == '__main__':
