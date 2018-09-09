@@ -69,8 +69,8 @@ def tldr(file, percentage=30):
 def main():
     parser = argparse.ArgumentParser(description='Text summarizing tool made in Python3.')
     parser.add_argument('file', help='Text file that will be summarized.')
-    parser.add_argument('-p', '--percentage', type=int, required=False,
-                        help='Percentage of summary compared to the size of the original text (default: 30).')
+    parser.add_argument('-p', '--percentage', type=int, choices=range(1, 101), metavar='[1-100]', required=False,
+                        help='Percentage of summary compared to the size of the original text (Default: 30).')
     args = parser.parse_args()
 
     if args.percentage is None:
