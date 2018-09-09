@@ -37,6 +37,23 @@ def evaluate_sentences(sentences, sparse_dict):
     return se_value
 
 
+def generate_summary(sentences, se_value, percentage):
+    summary_value = 0
+    max_value = sum(se_value)
+
+    evaluated_sentences = sorted(zip(se_value, sentences, range(len(sentences))), reverse=True)
+
+    i = 0
+    summary_sentences = []
+    while summary_value < (percentage / 100) * max_value:
+        summary_sentences.append(evaluated_sentences[i])
+        summary_value += evaluated_sentences[i][0]
+        i += 1
+
+    summary = sorted(summary_sentences, key=itemgetter(2))
+    return summary
+
+
 def tldr(file, percentage=30):
     text = load_file(file)
 
@@ -45,6 +62,8 @@ def tldr(file, percentage=30):
     sentences = split_to_sentences(text)
 
     se_value = evaluate_sentences(sentences, sparse_dict)
+
+    summary = generate_summary(sentences, se_value, percentage)
 
 
 def main():
