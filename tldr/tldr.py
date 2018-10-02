@@ -45,14 +45,20 @@ def generate_summary(sentences, se_value, percentage):
     evaluated_sentences = sorted(zip(se_value, sentences, range(len(sentences))), reverse=True)
 
     i = 0
+    target_value = (percentage / 100) * max_value
     summary_sentences = []
-    while summary_value < (percentage / 100) * max_value:
+    # While the next sentence will help us get closer to 'target_value' than the value of all current sentences
+    while target_value - summary_value >= (summary_value + evaluated_sentences[i][0]) - target_value:
         summary_sentences.append(evaluated_sentences[i])
         summary_value += evaluated_sentences[i][0]
         i += 1
+        if i >= len(evaluated_sentences):
+            break
 
     summary = sorted(summary_sentences, key=itemgetter(2))
-    return summary
+    summary_value_percentage = summary_value * 100 / max_value
+
+    return summary, summary_value_percentage
 
 
 def tldr(file, percentage=30):
