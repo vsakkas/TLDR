@@ -3,6 +3,8 @@ from operator import itemgetter
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 
+import words_with_dot
+
 
 def load_file(file):
     with open(file, 'r') as f:
@@ -20,8 +22,32 @@ def tfidf_vectorizer(text):
 
 
 def split_to_sentences(text):
-    sentences = text.split('.')
-    return sentences
+    ends_with_dot = False
+    sentences = []
+    for i, sentence in enumerate(text.split('.')):
+        if len(sentence.strip()) == 1 and i > 0:
+            sentences[-1] += sentence + '.'
+            ends_with_dot = True
+        elif ends_with_dot is True:
+            sentences[-1] += sentence + '.'
+            ends_with_dot = False
+        else:
+            sentences.append(sentence + '.')
+
+    sentences_2 = []
+    for i, sentence in enumerate(sentences):
+        last_word_index = sentence.rfind(' ')
+        last_word = sentence[last_word_index:].strip().lower()
+        if last_word in words_with_dot.tokens and i > 0:
+            sentences_2[-1] += sentence
+            ends_with_dot = True
+        elif ends_with_dot is True:
+            sentences_2[-1] += sentence
+            ends_with_dot = False
+        else:
+            sentences_2.append(sentence)
+
+    return sentences_2
 
 
 def evaluate_sentences(sentences, sparse_dict):
