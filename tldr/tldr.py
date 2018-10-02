@@ -14,9 +14,10 @@ def load_file(file):
 
 
 def tfidf_vectorizer(text):
-    count_vect = TfidfVectorizer(stop_words='english', lowercase=True)
+    count_vect = TfidfVectorizer(stop_words='english', lowercase=True, token_pattern=u'(?ui)\\b\\w*[a-z]+\\w*\\b')
     sparse_text = count_vect.fit_transform([text])
-    sparse_dict = {name: idf for name, idf in zip(count_vect.get_feature_names(), sparse_text.toarray()[0])}
+    sparse_dict = {name: idf for name, idf in zip(
+        count_vect.get_feature_names(), sparse_text.toarray()[0]) if len(name) > 1}
     return sparse_dict
 
 
