@@ -3,8 +3,6 @@ from operator import itemgetter
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-import nltk.data
-
 
 def load_file(file):
     with open(file, 'r') as f:
@@ -22,8 +20,7 @@ def tfidf_vectorizer(text):
 
 
 def split_to_sentences(text):
-    tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
-    sentences = tokenizer.tokenize(text)
+    sentences = text.split('.')
     return sentences
 
 
