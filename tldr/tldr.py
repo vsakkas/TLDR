@@ -29,7 +29,7 @@ def split_to_sentences(text):
             sentences[-1] += sentence + '.'
             if len(sentence.strip()) == 1:  # == 0 means multiple consecutive dots
                 ends_with_dot = True
-        elif ends_with_dot is True:
+        elif ends_with_dot is True and i > 0:
             sentences[-1] += sentence + '.'
             ends_with_dot = False
         else:
@@ -42,7 +42,7 @@ def split_to_sentences(text):
         if last_word in words_with_dot.tokens and i > 0:
             sentences_2[-1] += sentence
             ends_with_dot = True
-        elif ends_with_dot is True:
+        elif ends_with_dot is True and i > 0:
             sentences_2[-1] += sentence
             ends_with_dot = False
         else:
