@@ -25,9 +25,10 @@ def split_to_sentences(text):
     ends_with_dot = False
     sentences = []
     for i, sentence in enumerate(text.split('.')):
-        if len(sentence.strip()) == 1 and i > 0:
+        if len(sentence.strip()) <= 1 and i > 0:
             sentences[-1] += sentence + '.'
-            ends_with_dot = True
+            if len(sentence.strip()) == 1:  # == 0 means multiple consecutive dots
+                ends_with_dot = True
         elif ends_with_dot is True:
             sentences[-1] += sentence + '.'
             ends_with_dot = False
