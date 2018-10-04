@@ -6,6 +6,10 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 import words_with_dot
 
 
+_default_percentage = 30
+_default_mode = 'value'
+
+
 def validate_arguments(percentage, mode):
     if type(percentage) is not int:
         raise TypeError('invalid type for percentage: ' + str(type(percentage)))
@@ -125,20 +129,15 @@ def main():
     parser.add_argument('-p', '--percentage', type=int, choices=range(1, 101), metavar='[1-100]', required=False,
                         help='Percentage of summary compared to the size of the original text (Default: 30).')
     parser.add_argument('-m', '--mode', type=str, choices=['value', 'length'], metavar='[value|length]', required=False,
-                        help='Criterion to use in order to generate a summary for the provided text. \
+                        help='Criterion to use in order to generate a summary for the provided text (Default: value). \
                         "value" uses the calculated value of each token with the usage of the TFIDF vectorizer. \
                         "Length" uses the length of the text in characters. \
                         Both the "value" and the "length" must be as close to "percentage" as possible.')
     args = parser.parse_args()
 
-    if args.percentage is None and args.mode is None:
-        tldr(file=args.file)
-    elif args.percentage is None:
-        tldr(file=args.file, mode=args.mode)
-    elif args.mode is None:
-        tldr(file=args.file, percentage=args.percentage)
-    else:
-        tldr(file=args.file, percentage=args.percentage, mode=args.mode)
+    tldr(file=args.file,
+         percentage=_default_percentage if args.percentage is None else args.percentage,
+         mode=_default_mode if args.mode is None else args.mode)
 
 
 if __name__ == '__main__':
