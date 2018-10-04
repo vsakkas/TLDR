@@ -6,6 +6,17 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 import words_with_dot
 
 
+def validate_arguments(percentage, mode):
+    if type(percentage) is not int:
+        raise TypeError('invalid type for percentage: ' + str(type(percentage)))
+    elif percentage < 0 or percentage > 100:
+        raise ValueError('invalid value for percentage: ' + str(percentage))
+    if type(mode) is not str:
+        raise TypeError('invalid type for mode: ' + str(type(mode)))
+    elif mode != 'value' and mode != 'length':
+        raise ValueError('invalid value for mode: ' + str(mode))
+
+
 def load_file(file):
     with open(file, 'r') as f:
         text = f.read()
@@ -62,22 +73,31 @@ def evaluate_sentences(sentences, sparse_dict):
     return se_value
 
 
-def generate_summary(sentences, se_value, percentage):
-    summary_value = 0
-    max_value = sum(se_value)
-
+def generate_summary(sentences, se_value, percentage, mode):
     evaluated_sentences = sorted(zip(se_value, sentences, range(len(sentences))), reverse=True)
 
     i = 0
+    if mode == 'length':
+        max_value = len(''.join(sentences))
+    else:  # mode == 'value'
+        max_value = sum(se_value)
     target_value = (percentage / 100) * max_value
+
+    summary_value = 0
     summary_sentences = []
+    next_sentence_value = len(evaluated_sentences[0][1]) if mode == 'length' else evaluated_sentences[0][0]
+
     # While the next sentence will help us get closer to 'target_value' than the value of all current sentences
-    while target_value - summary_value >= (summary_value + evaluated_sentences[i][0]) - target_value:
+    while target_value - summary_value >= (summary_value + next_sentence_value) - target_value:
         summary_sentences.append(evaluated_sentences[i])
-        summary_value += evaluated_sentences[i][0]
+        if mode == 'length':
+            summary_value += len(evaluated_sentences[i][1])
+        else:  # mode == 'value
+            summary_value += evaluated_sentences[i][0]
         i += 1
-        if i >= len(evaluated_sentences):
+        if i >= len(sentences):
             break
+        next_sentence_value = len(evaluated_sentences[i][1]) if mode == 'length' else evaluated_sentences[i][0]
 
     summary = sorted(summary_sentences, key=itemgetter(2))
     summary_value_percentage = summary_value * 100 / max_value
@@ -85,7 +105,9 @@ def generate_summary(sentences, se_value, percentage):
     return summary, summary_value_percentage
 
 
-def tldr(file, percentage=30):
+def tldr(file, percentage=30, mode='value'):
+    validate_arguments(percentage, mode)
+
     text = load_file(file)
 
     sparse_dict = tfidf_vectorizer(text)
@@ -94,7 +116,7 @@ def tldr(file, percentage=30):
 
     se_value = evaluate_sentences(sentences, sparse_dict)
 
-    summary = generate_summary(sentences, se_value, percentage)
+    summary, summary_value_percentage = generate_summary(sentences, se_value, percentage, mode)
 
 
 def main():
@@ -102,12 +124,21 @@ def main():
     parser.add_argument('file', help='Text file that will be summarized.')
     parser.add_argument('-p', '--percentage', type=int, choices=range(1, 101), metavar='[1-100]', required=False,
                         help='Percentage of summary compared to the size of the original text (Default: 30).')
+    parser.add_argument('-m', '--mode', type=str, choices=['value', 'length'], metavar='[value|length]', required=False,
+                        help='Criterion to use in order to generate a summary for the provided text. \
+                        "value" uses the calculated value of each token with the usage of the TFIDF vectorizer. \
+                        "Length" uses the length of the text in characters. \
+                        Both the "value" and the "length" must be as close to "percentage" as possible.')
     args = parser.parse_args()
 
-    if args.percentage is None:
+    if args.percentage is None and args.mode is None:
         tldr(file=args.file)
-    else:
+    elif args.percentage is None:
+        tldr(file=args.file, mode=args.mode)
+    elif args.mode is None:
         tldr(file=args.file, percentage=args.percentage)
+    else:
+        tldr(file=args.file, percentage=args.percentage, mode=args.mode)
 
 
 if __name__ == '__main__':
