@@ -122,7 +122,7 @@ def tldr(file, percentage=30, mode='value'):
 
     summary_sentences, summary_value_percentage = generate_summary(sentences, sentence_value, percentage, mode)
 
-    summary = ''.join([sentence[1] for sentence in summary_sentences])
+    summary = ''.join([sentence[1] for sentence in summary_sentences]).strip()
 
     return summary, summary_value_percentage
 
