@@ -67,46 +67,46 @@ def split_to_sentences(text):
 
 
 def evaluate_sentences(sentences, sparse_dict):
-    se_value = []
+    sentence_value = []
     for i, sentence in enumerate(sentences):
-        se_value.append(0)
+        sentence_value.append(0)
         for word in sentence.split(' '):
             if word in sparse_dict:
-                se_value[-1] += sparse_dict[word]
+                sentence_value[-1] += sparse_dict[word]
 
-    return se_value
+    return sentence_value
 
 
-def generate_summary(sentences, se_value, percentage, mode):
-    evaluated_sentences = sorted(zip(se_value, sentences, range(len(sentences))), reverse=True)
+def generate_summary(sentences, sentence_value, percentage, mode):
+    evaluated_sentences = sorted(zip(sentence_value, sentences, range(len(sentences))), reverse=True)
 
-    i = 0
     if mode == 'length':
         max_value = len(''.join(sentences))
     else:  # mode == 'value'
-        max_value = sum(se_value)
+        max_value = sum(sentence_value)
     target_value = (percentage / 100) * max_value
 
     summary_value = 0
     summary_sentences = []
     next_sentence_value = len(evaluated_sentences[0][1]) if mode == 'length' else evaluated_sentences[0][0]
 
+    i = 0
     # While the next sentence will help us get closer to 'target_value' than the value of all current sentences
     while target_value - summary_value >= (summary_value + next_sentence_value) - target_value:
         summary_sentences.append(evaluated_sentences[i])
         if mode == 'length':
             summary_value += len(evaluated_sentences[i][1])
-        else:  # mode == 'value
+        else:  # mode == 'value'
             summary_value += evaluated_sentences[i][0]
         i += 1
         if i >= len(sentences):
             break
         next_sentence_value = len(evaluated_sentences[i][1]) if mode == 'length' else evaluated_sentences[i][0]
 
-    summary = sorted(summary_sentences, key=itemgetter(2))
+    summary_sentences = sorted(summary_sentences, key=itemgetter(2))
     summary_value_percentage = summary_value * 100 / max_value
 
-    return summary, summary_value_percentage
+    return summary_sentences, summary_value_percentage
 
 
 def tldr(file, percentage=30, mode='value'):
@@ -118,9 +118,13 @@ def tldr(file, percentage=30, mode='value'):
 
     sentences = split_to_sentences(text)
 
-    se_value = evaluate_sentences(sentences, sparse_dict)
+    sentence_value = evaluate_sentences(sentences, sparse_dict)
 
-    summary, summary_value_percentage = generate_summary(sentences, se_value, percentage, mode)
+    summary_sentences, summary_value_percentage = generate_summary(sentences, sentence_value, percentage, mode)
+
+    summary = ''.join([sentence[1] for sentence in summary_sentences])
+
+    return summary, summary_value_percentage
 
 
 def main():
