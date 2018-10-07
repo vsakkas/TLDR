@@ -6,10 +6,6 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 import words_with_dot
 
 
-_default_percentage = 30
-_default_mode = 'value'
-
-
 def validate_arguments(percentage, mode):
     if type(percentage) is not int:
         raise TypeError('invalid type for percentage: ' + str(type(percentage)))
@@ -130,18 +126,20 @@ def tldr(file, percentage=30, mode='value'):
 def main():
     parser = argparse.ArgumentParser(description='Text summarizing tool made in Python3.')
     parser.add_argument('file', help='Text file that will be summarized.')
-    parser.add_argument('-p', '--percentage', type=int, choices=range(1, 101), metavar='[1-100]', required=False,
-                        help='Percentage of summary compared to the size of the original text (Default: 30).')
-    parser.add_argument('-m', '--mode', type=str, choices=['value', 'length'], metavar='[value|length]', required=False,
-                        help='Criterion to use in order to generate a summary for the provided text (Default: value). \
+    parser.add_argument('-p', '--percentage', type=int, default=30,
+                        choices=range(1, 101), metavar='[1-100]', required=False,
+                        help='Percentage of summary compared to the size of the original text. (Default: 30)')
+    parser.add_argument('-m', '--mode', type=str, default='value',
+                        choices=['value', 'length'], metavar='[value|length]', required=False,
+                        help='Criterion to use in order to generate a summary for the provided text. \
                         "value" uses the calculated value of each token with the usage of the TFIDF vectorizer. \
                         "Length" uses the length of the text in characters. \
-                        Both the "value" and the "length" must be as close to "percentage" as possible.')
+                        Both "value" and "length" must be as close to "percentage" as possible. (Default: value)')
     args = parser.parse_args()
 
     tldr(file=args.file,
-         percentage=_default_percentage if args.percentage is None else args.percentage,
-         mode=_default_mode if args.mode is None else args.mode)
+         percentage=args.percentage,
+         mode=args.mode)
 
 
 if __name__ == '__main__':
