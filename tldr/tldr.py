@@ -6,7 +6,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 import words_with_dot
 
 
-def validate_arguments(percentage, mode):
+def _validate_arguments(percentage, mode):
     if type(percentage) is not int:
         raise TypeError('invalid type for percentage: ' + str(type(percentage)))
     elif percentage < 0 or percentage > 100:
@@ -17,14 +17,14 @@ def validate_arguments(percentage, mode):
         raise ValueError('invalid value for mode: ' + str(mode))
 
 
-def load_file(file):
+def _load_file(file):
     with open(file, 'r') as f:
         text = f.read()
     text = text.replace('\n', '')
     return text
 
 
-def tfidf_vectorizer(text):
+def _tfidf_vectorizer(text):
     count_vect = TfidfVectorizer(stop_words='english', lowercase=True, token_pattern=u'(?ui)\\b\\w*[a-z]+\\w*\\b')
     sparse_text = count_vect.fit_transform([text])
     sparse_dict = {name: idf for name, idf in zip(
@@ -32,7 +32,7 @@ def tfidf_vectorizer(text):
     return sparse_dict
 
 
-def split_to_sentences(text):
+def _split_to_sentences(text):
     ends_with_dot = False
     sentences = []
     for i, sentence in enumerate(text.split('.')):
@@ -62,28 +62,18 @@ def split_to_sentences(text):
     return sentences_2
 
 
-def evaluate_sentences(sentences, sparse_dict):
+def _evaluate_sentences(sentences, sparse_dict):
     sentence_value = []
-    total_value = 0
-    total_sentences = 0
     for i, sentence in enumerate(sentences):
         sentence_value.append(0)
         for word in sentence.split(' '):
             if word in sparse_dict:
                 sentence_value[-1] += sparse_dict[word]
-                total_value += sparse_dict[word]
-        total_sentences += 1
-
-    average_value = total_value / total_sentences
-    above_average = 0
-    for i, elem in enumerate(sentence_value):
-        if elem > average_value:
-            above_average += 1
 
     return sentence_value
 
 
-def generate_summary(sentences, sentence_value, percentage, mode):
+def _generate_summary(sentences, sentence_value, percentage, mode):
     evaluated_sentences = sorted(zip(sentence_value, sentences, range(len(sentences))), reverse=True)
 
     if mode == 'length':
@@ -125,17 +115,17 @@ def generate_summary(sentences, sentence_value, percentage, mode):
 
 
 def tldr(file, percentage=30, mode='value'):
-    validate_arguments(percentage, mode)
+    _validate_arguments(percentage, mode)
 
-    text = load_file(file)
+    text = _load_file(file)
 
-    sparse_dict = tfidf_vectorizer(text)
+    sparse_dict = _tfidf_vectorizer(text)
 
-    sentences = split_to_sentences(text)
+    sentences = _split_to_sentences(text)
 
-    sentence_value = evaluate_sentences(sentences, sparse_dict)
+    sentence_value = _evaluate_sentences(sentences, sparse_dict)
 
-    summary_sentences, summary_value_percentage = generate_summary(sentences, sentence_value, percentage, mode)
+    summary_sentences, summary_value_percentage = _generate_summary(sentences, sentence_value, percentage, mode)
 
     summary = ''.join([sentence[1] for sentence in summary_sentences]).strip()
 
