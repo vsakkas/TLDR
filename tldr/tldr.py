@@ -13,7 +13,7 @@ def validate_arguments(percentage, mode):
         raise ValueError('invalid value for percentage: ' + str(percentage))
     if type(mode) is not str:
         raise TypeError('invalid type for mode: ' + str(type(mode)))
-    elif mode != 'value' and mode != 'length':
+    elif mode != 'value' and mode != 'length' and mode != 'best':
         raise ValueError('invalid value for mode: ' + str(mode))
 
 
@@ -64,11 +64,21 @@ def split_to_sentences(text):
 
 def evaluate_sentences(sentences, sparse_dict):
     sentence_value = []
+    total_value = 0
+    total_sentences = 0
     for i, sentence in enumerate(sentences):
         sentence_value.append(0)
         for word in sentence.split(' '):
             if word in sparse_dict:
                 sentence_value[-1] += sparse_dict[word]
+                total_value += sparse_dict[word]
+        total_sentences += 1
+
+    average_value = total_value / total_sentences
+    above_average = 0
+    for i, elem in enumerate(sentence_value):
+        if elem > average_value:
+            above_average += 1
 
     return sentence_value
 
@@ -78,9 +88,16 @@ def generate_summary(sentences, sentence_value, percentage, mode):
 
     if mode == 'length':
         max_value = len(''.join(sentences))
-    else:  # mode == 'value'
+    else:  # mode == 'value' or mode == 'best'
         max_value = sum(sentence_value)
-    target_value = (percentage / 100) * max_value
+
+    if mode == 'best':
+        # set a high enough value so that the while statement will not stop when checking the target_value
+        target_value = max_value + 1
+    else:  # mode == 'value' or mode == 'length'
+        target_value = (percentage / 100) * max_value
+
+    average_value = sum(sentence[0] for sentence in evaluated_sentences) / len(evaluated_sentences)
 
     summary_value = 0
     summary_sentences = []
@@ -89,10 +106,12 @@ def generate_summary(sentences, sentence_value, percentage, mode):
     i = 0
     # While the next sentence will help us get closer to 'target_value' than the value of all current sentences
     while target_value - summary_value >= (summary_value + next_sentence_value) - target_value:
+        if mode == 'best' and evaluated_sentences[i][0] < average_value:
+            break
         summary_sentences.append(evaluated_sentences[i])
         if mode == 'length':
             summary_value += len(evaluated_sentences[i][1])
-        else:  # mode == 'value'
+        else:  # mode == 'value' or mode == 'best'
             summary_value += evaluated_sentences[i][0]
         i += 1
         if i >= len(sentences):
@@ -130,10 +149,12 @@ def main():
                         choices=range(1, 101), metavar='[1-100]', required=False,
                         help='Percentage of summary compared to the size of the original text. (Default: 30)')
     parser.add_argument('-m', '--mode', type=str, default='value',
-                        choices=['value', 'length'], metavar='[value|length]', required=False,
+                        choices=['value', 'length', 'best'], metavar='[value|length|best]', required=False,
                         help='Criterion to use in order to generate a summary for the provided text. \
                         "value" uses the calculated value of each token with the usage of the TFIDF vectorizer. \
-                        "Length" uses the length of the text in characters. \
+                        "length" uses the length of the text in characters. \
+                        "best" uses the calculated value of each token and only selects the sentences the sentences \
+                        with a value that is higher than the average calculated value per sentence. \
                         Both "value" and "length" must be as close to "percentage" as possible. (Default: value)')
     args = parser.parse_args()
 
