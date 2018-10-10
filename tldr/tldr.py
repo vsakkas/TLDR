@@ -53,7 +53,7 @@ def _load_file(file):
 
 def _tfidf_vectorizer(text, vocabulary):
     """
-    Uses TFIDF vectorizer to create a dictionary of words and their value.
+    Uses TF-IDF vectorizer to create a dictionary of words and their value.
     If `vocabulary` is not None, then it is used to generate a vocabulary.
     If no file is provided, the file to be summarized will be used instead
     in order to extract a vocabulary, although this is not suggested.
@@ -235,7 +235,7 @@ def tldr(file, percentage=30, mode='best', vocabulary=None):
         Percentage of length or value summary compared to the length or value of the original text. (default: 30)
     mode : str
         Criterion to use in order to generate a summary for the provided text. (default: 'best')
-        * "value" uses the calculated value of each token with the usage of the TFIDF vectorizer.
+        * "value" uses the calculated value of each token with the usage of the TF-IDF vectorizer.
         * "length" uses the length of the text in characters.
         * "best" uses the calculated value of each token and only selects the sentences witha value that is higher
         than the average calculated value per sentence.
@@ -277,7 +277,7 @@ def main():
     parser.add_argument('-m', '--mode', type=str, default='best',
                         choices=['value', 'length', 'best'], metavar='[value|length|best]', required=False,
                         help='Criterion to use in order to generate a summary for the provided text. \
-                        "value" uses the calculated value of each token with the usage of the TFIDF vectorizer. \
+                        "value" uses the calculated value of each token with the usage of the TF-IDF vectorizer. \
                         "length" uses the length of the text in characters. \
                         "best" uses the calculated value of each token and only selects the sentences \
                         with a value that is higher than the average calculated value per sentence. \
@@ -285,7 +285,7 @@ def main():
                         be as close to the provided "percentage" parameter as possible. (default: best)')
     parser.add_argument('-v', '--vocabulary', type=str, required=False,
                         help='CSV file that contains columns of text that will be used to extract a vocabulary \
-                        using the TFIDF vectorizer. If no file is provided, the file to be summarized \
+                        using the TF-IDF vectorizer. If no file is provided, the file to be summarized \
                         will be used instead in order to extract a vocabulary, although this is not suggested.')
     args = parser.parse_args()
 
