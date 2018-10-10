@@ -1,6 +1,7 @@
 import argparse
 from operator import itemgetter
 
+import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 import words_with_dot
@@ -18,15 +19,22 @@ def _validate_arguments(percentage, mode):
 
 
 def _load_file(file):
+
     with open(file, 'r') as f:
         text = f.read()
     text = text.replace('\n', '')
     return text
 
 
-def _tfidf_vectorizer(text):
+def _tfidf_vectorizer(text, vocabulary):
+
     count_vect = TfidfVectorizer(stop_words='english', lowercase=True, token_pattern=u'(?ui)\\b\\w*[a-z]+\\w*\\b')
-    sparse_text = count_vect.fit_transform([text])
+    if vocabulary is None:
+        sparse_text = count_vect.fit_transform([text])
+    else:
+        df = pd.read_csv(vocabulary)
+        count_vect.fit(df['content'])
+        sparse_text = count_vect.transform([text])
     sparse_dict = {name: idf for name, idf in zip(
         count_vect.get_feature_names(), sparse_text.toarray()[0]) if len(name) > 1}
     return sparse_dict
@@ -114,12 +122,12 @@ def _generate_summary(sentences, sentence_value, percentage, mode):
     return summary_sentences, summary_value_percentage
 
 
-def tldr(file, percentage=30, mode='value'):
+def tldr(file, percentage=30, mode='value', vocabulary=None):
     _validate_arguments(percentage, mode)
 
     text = _load_file(file)
 
-    sparse_dict = _tfidf_vectorizer(text)
+    sparse_dict = _tfidf_vectorizer(text, vocabulary)
 
     sentences = _split_to_sentences(text)
 
@@ -137,20 +145,25 @@ def main():
     parser.add_argument('file', help='Text file that will be summarized.')
     parser.add_argument('-p', '--percentage', type=int, default=30,
                         choices=range(1, 101), metavar='[1-100]', required=False,
-                        help='Percentage of summary compared to the size of the original text. (Default: 30)')
+                        help='Percentage of summary compared to the size of the original text. (default: 30)')
     parser.add_argument('-m', '--mode', type=str, default='value',
                         choices=['value', 'length', 'best'], metavar='[value|length|best]', required=False,
                         help='Criterion to use in order to generate a summary for the provided text. \
                         "value" uses the calculated value of each token with the usage of the TFIDF vectorizer. \
                         "length" uses the length of the text in characters. \
-                        "best" uses the calculated value of each token and only selects the sentences the sentences \
+                        "best" uses the calculated value of each token and only selects the sentences \
                         with a value that is higher than the average calculated value per sentence. \
-                        Both "value" and "length" must be as close to "percentage" as possible. (Default: value)')
+                        Both "value" and "length" must be as close to "percentage" as possible. (default: value)')
+    parser.add_argument('-v', '--vocabulary', type=str, required=False,
+                        help='CSV file that contains columns of text that will be used to extract a vocabulary \
+                        using the TFIDF vectorizer. If no file is provided, the file to be summarized \
+                        will be used instead in order to extract a vocabulary, although this is not suggested.')
     args = parser.parse_args()
 
     tldr(file=args.file,
          percentage=args.percentage,
-         mode=args.mode)
+         mode=args.mode,
+         vocabulary=args.vocabulary)
 
 
 if __name__ == '__main__':
