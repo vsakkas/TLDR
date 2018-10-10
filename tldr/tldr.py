@@ -122,7 +122,7 @@ def _generate_summary(sentences, sentence_value, percentage, mode):
     return summary_sentences, summary_value_percentage
 
 
-def tldr(file, percentage=30, mode='value', vocabulary=None):
+def tldr(file, percentage=30, mode='best', vocabulary=None):
     _validate_arguments(percentage, mode)
 
     text = _load_file(file)
@@ -146,14 +146,14 @@ def main():
     parser.add_argument('-p', '--percentage', type=int, default=30,
                         choices=range(1, 101), metavar='[1-100]', required=False,
                         help='Percentage of summary compared to the size of the original text. (default: 30)')
-    parser.add_argument('-m', '--mode', type=str, default='value',
+    parser.add_argument('-m', '--mode', type=str, default='best',
                         choices=['value', 'length', 'best'], metavar='[value|length|best]', required=False,
                         help='Criterion to use in order to generate a summary for the provided text. \
                         "value" uses the calculated value of each token with the usage of the TFIDF vectorizer. \
                         "length" uses the length of the text in characters. \
                         "best" uses the calculated value of each token and only selects the sentences \
                         with a value that is higher than the average calculated value per sentence. \
-                        Both "value" and "length" must be as close to "percentage" as possible. (default: value)')
+                        Both "value" and "length" must be as close to "percentage" as possible. (default: best)')
     parser.add_argument('-v', '--vocabulary', type=str, required=False,
                         help='CSV file that contains columns of text that will be used to extract a vocabulary \
                         using the TFIDF vectorizer. If no file is provided, the file to be summarized \
