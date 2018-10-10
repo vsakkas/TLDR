@@ -239,7 +239,7 @@ def tldr(file, percentage=30, mode='best', vocabulary=None):
         * "length" uses the length of the text in characters.
         * "best" uses the calculated value of each token and only selects the sentences witha value that is higher
         than the average calculated value per sentence.
-        Both "value" and "length" must be as close to "percentage" as possible.
+        When "value" or "length" is selected, the value/length of the summary must be as close to the provided "percentage" parameter as possible.
         When "best" mode is selected, the value of `percentage` is ignored.
     Returns
     -------
@@ -281,17 +281,19 @@ def main():
                         "length" uses the length of the text in characters. \
                         "best" uses the calculated value of each token and only selects the sentences \
                         with a value that is higher than the average calculated value per sentence. \
-                        Both "value" and "length" must be as close to "percentage" as possible. (default: best)')
+                        When "value" or "length" is selected, the value/length of the summary must \
+                        be as close to the provided "percentage" parameter as possible. (default: best)')
     parser.add_argument('-v', '--vocabulary', type=str, required=False,
                         help='CSV file that contains columns of text that will be used to extract a vocabulary \
                         using the TFIDF vectorizer. If no file is provided, the file to be summarized \
                         will be used instead in order to extract a vocabulary, although this is not suggested.')
     args = parser.parse_args()
 
-    tldr(file=args.file,
-         percentage=args.percentage,
-         mode=args.mode,
-         vocabulary=args.vocabulary)
+    summary = tldr(file=args.file,
+                   percentage=args.percentage,
+                   mode=args.mode,
+                   vocabulary=args.vocabulary)
+    print(summary[0])
 
 
 if __name__ == '__main__':
